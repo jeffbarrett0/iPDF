@@ -10,7 +10,18 @@ and there are no accounts, billing, telemetry or analytics.
 
 Stack: Next.js 15 + TypeScript (UI) · Python 3.12 + FastAPI + pikepdf (API) · LibreOffice headless (Office → PDF) · PostgreSQL (metadata and audit log).
 
-## Quick start
+## Easiest way: Docker Desktop (Windows, Mac, Linux)
+
+1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/), open it, and wait until it says **Engine running**.
+2. Download/clone this repository.
+3. **Windows:** double-click `start.bat`. **Mac/Linux:** run `./start.sh`.
+4. The first run downloads and builds everything (10–20 minutes). When it finishes, your browser opens **http://localhost:3000**.
+
+To stop: double-click `durdur.bat` (or `docker compose down`). Your files are kept. To start again, run `start.bat` again (it is fast after the first time).
+
+Everything runs in three containers (web, API with LibreOffice + Tesseract, PostgreSQL), published on `127.0.0.1` only. Your files and database live in Docker volumes (`ipdf_data`, `ipdf_db`); **backups are written to the `backups/` folder next to the project** — use *Storage & backup* in the app to create them, or to export everything as a zip. Secrets are generated into `.env` on first run (never committed). OCR ships with English; add more with an extra `tesseract-ocr-<lang>` package in `api/Dockerfile`.
+
+## Quick start without Docker
 
 ```bash
 ./run.sh
@@ -31,7 +42,7 @@ starts both servers. `Ctrl+C` stops the servers (the local PostgreSQL keeps runn
 | Tesseract + Ghostscript | OCR | `apt install tesseract-ocr ghostscript` |
 
 LibreOffice and Tesseract are optional: without them those two features report a clear, recoverable error and everything else works.
-If no PostgreSQL binaries are found but Docker is, `docker-compose.yml` starts PostgreSQL in a container instead.
+If no PostgreSQL binaries are found but Docker is, `docker-compose.db.yml` starts PostgreSQL in a container instead.
 To use your own server, set `DATABASE_URL` in `.env`.
 
 Other commands: `./run.sh dev` (hot reload) · `./run.sh test` · `./run.sh backup [dir]` · `./run.sh restore ARCHIVE` · `./run.sh stop-db`.

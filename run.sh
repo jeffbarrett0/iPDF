@@ -68,7 +68,7 @@ start_db() {
     say "PostgreSQL ready on 127.0.0.1:${PG_PORT:-54329} (data in ${DATA_DIR:-./data}/postgres)"
   elif command -v docker >/dev/null && docker compose version >/dev/null 2>&1; then
     warn "no local PostgreSQL server binaries; starting PostgreSQL in Docker instead"
-    docker compose up -d db
+    docker compose -f docker-compose.db.yml up -d db
   else
     cat "$ROOT/.run-db.err" >&2 || true
     die "PostgreSQL is not available. Install PostgreSQL 14+ (server binaries), or Docker, or set DATABASE_URL in .env."

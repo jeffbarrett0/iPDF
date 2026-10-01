@@ -1,14 +1,53 @@
-# Optional fallback used by run.sh only when no local PostgreSQL server binaries are installed.
-# Binds to 127.0.0.1 only; credentials come from .env (never committed).
+# Whole app in containers:  docker compose up -d --build --wait   (or double-click start.bat on Windows)
+# Everything is published on 127.0.0.1 only. Secrets come from .env (created by start.bat / start.sh).
 services:
   db:
     image: postgres:16
     restart: unless-stopped
     environment:
       POSTGRES_USER: ipdf
-      POSTGRES_PASSWORD: ${PG_PASSWORD:?run ./run.sh once to generate .env}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:?missing .env - run start.bat (Windows) or ./start.sh first}
       POSTGRES_DB: ipdf
-    ports:
-      - "127.0.0.1:${PG_PORT:-54329}:5432"
     volumes:
-      - ${DATA_DIR:-./data}/postgres-docker:/var/lib/postgresql/data
+      - ipdf_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ipdf -d ipdf"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://ipdf:${PG_PASSWORD}@db:5432/ipdf
+      DATA_DIR: /data
+      BACKUP_DIR: /backups
+      API_HOST: 0.0.0.0
+      API_PORT: "8000"
+    volumes:
+      - ipdf_data:/data
+      - ./backups:/backups
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+      args:
+        MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-200}
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${WEB_PORT:-3000}:3000"
+
+volumes:
+  ipdf_db:
+  ipdf_data:
