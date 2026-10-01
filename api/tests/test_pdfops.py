@@ -88,10 +88,11 @@ def test_watermark_draws_on_page_including_rotated(pdf_factory, tmp_path):
         pdfops.watermark(src, "DRAFT", None, 1.0, 120, 0, "#ff0000", out)
         doc = pdfium.PdfDocument(str(out))
         img = doc[0].render(scale=1).to_pil().convert("RGB")
-        reds = sum(1 for px in img.getdata() if px[0] > 200 and px[1] < 80 and px[2] < 80)
+        px = [(d[i], d[i + 1], d[i + 2]) for d in [img.tobytes()] for i in range(0, len(d), 3)]
+        reds = sum(1 for p in px if p[0] > 200 and p[1] < 80 and p[2] < 80)
         assert reds > 500, f"watermark not visible for rotation {rot}"
         # centred: the red pixels' centroid is near the page centre
-        xs = [i % img.width for i, px in enumerate(img.getdata()) if px[0] > 200 and px[1] < 80 and px[2] < 80]
+        xs = [i % img.width for i, p in enumerate(px) if p[0] > 200 and p[1] < 80 and p[2] < 80]
         assert abs(sum(xs) / len(xs) - img.width / 2) < img.width * 0.15
     with pytest.raises(AppError):
         pdfops.watermark(src, "emoji 😀", None, 0.5, 40, 0, "#000000", out)

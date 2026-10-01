@@ -13,3 +13,5 @@ web/next-env.d.ts
 *.log
 .run/
 .run-db.err
+web/tsconfig.tsbuildinfo
+*.tsbuildinfo
