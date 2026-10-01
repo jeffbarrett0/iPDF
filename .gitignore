@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+.venv/
+data/
+backups/
+__pycache__/
+*.pyc
+.pytest_cache/
+node_modules/
+web/.next/
+web/next-env.d.ts
+*.log
+.run/
+.run-db.err

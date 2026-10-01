@@ -1,0 +1,14 @@
+# Optional fallback used by run.sh only when no local PostgreSQL server binaries are installed.
+# Binds to 127.0.0.1 only; credentials come from .env (never committed).
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ipdf
+      POSTGRES_PASSWORD: ${PG_PASSWORD:?run ./run.sh once to generate .env}
+      POSTGRES_DB: ipdf
+    ports:
+      - "127.0.0.1:${PG_PORT:-54329}:5432"
+    volumes:
+      - ${DATA_DIR:-./data}/postgres-docker:/var/lib/postgresql/data
